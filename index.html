@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PharmaEpi — Drug Safety Surveillance & Regulatory Intelligence</title>
+<meta name="description" content="PharmaEpi: Pharmaceutical epidemiology dashboard for GLP-1 drug safety surveillance, competitive AE benchmarking, FDA FAERS adverse events, recall tracking, and 510(k) device intelligence. Ozempic, Mounjaro, Wegovy, Jardiance.">
+<meta name="keywords" content="FDA FAERS, GLP-1, Ozempic, Mounjaro, drug safety, adverse events, 510k, Wegovy, Jardiance, pharmaceutical epidemiology, drug recalls, medical device clearance">
+<link rel="canonical" href="https://xinaliu2134.github.io/pharmaepi/">
+<meta property="og:title" content="PharmaEpi — Drug Safety Surveillance & Regulatory Intelligence">
+<meta property="og:description" content="Pharmaceutical epidemiology dashboard: GLP-1 drug safety monitoring, competitive AE benchmarking, FDA recall tracking, and 510(k) device intelligence.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xinaliu2134.github.io/pharmaepi/">
+<meta property="og:site_name" content="PharmaEpi">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PharmaEpi — Drug Safety Surveillance & Regulatory Intelligence">
+<meta name="twitter:description" content="Pharmaceutical epidemiology dashboard: GLP-1 drug safety monitoring, competitive AE benchmarking, FDA recall tracking, and 510(k) device intelligence.">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" crossorigin="anonymous">
+<style>
+:root{--bg:#f8f9fc;--bg2:#ffffff;--bg3:#f0f2f7;--border:#e2e5ef;--text:#1a1f36;--muted:#6b7294;--sans:'Inter',-apple-system,sans-serif;--mono:'DM Mono',monospace;--amber:#d97706;--amber-light:#fef3c7;--amber-dim:#fffbeb;--blue:#2563eb;--blue-light:#eff6ff;--red:#dc2626;--red-light:#fef2f2;--green:#16a34a;--green-light:#f0fdf4;--teal:#0d9488;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+
+/* Cross-nav */
+.cross-nav{display:flex;align-items:center;justify-content:center;gap:18px;padding:8px 32px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:12px;font-weight:500}
+.cross-nav a{color:var(--muted);transition:color .15s}
+.cross-nav a:hover{color:var(--blue)}
+.cross-nav .current{color:var(--blue);font-weight:700}
+.cross-nav .sep{color:var(--border)}
+
+/* Header */
+.disclaimer{background:#f0f2f7;border-bottom:1px solid #e2e5ef;color:#6b7294;font-size:10px;padding:6px 32px;text-align:center}
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px;border-bottom:1px solid var(--border);background:var(--bg2);box-shadow:var(--shadow);flex-wrap:wrap;gap:8px}
+.hdr-left{display:flex;align-items:center;gap:16px}
+.logo{font-weight:700;font-size:18px;color:var(--blue);letter-spacing:-.3px}
+.logo span{color:var(--text)}
+.subtitle{font-size:11px;color:var(--muted)}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.lang-btn{padding:5px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--bg2);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.lang-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* Tabs */
+.tab-nav{display:flex;background:var(--bg3);border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto;gap:0}
+.tab-btn{padding:10px 18px;font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{font-weight:600;color:var(--blue);border-bottom-color:var(--blue)}
+
+/* Main */
+.main{max-width:1200px;margin:0 auto;padding:28px 32px}
+.panel{display:none}.panel.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h2{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.section-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+h3{font-size:14px;font-weight:600;margin-bottom:12px}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow);transition:box-shadow .2s}
+.stat-card:hover{box-shadow:var(--shadow-lg)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:500}
+.stat-value{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--blue)}
+.stat-value.blue{color:var(--blue)}.stat-value.red{color:var(--red)}.stat-value.green{color:var(--green)}.stat-value.teal{color:var(--teal)}
+
+.stat-detail{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Charts */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.chart-card.full{grid-column:1/-1}
+.chart-wrap{position:relative;height:280px}
+.chart-wrap.tall{height:360px}
+.source-tag{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--muted);margin-left:4px}
+
+/* Tables */
+.data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;margin-bottom:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.data-table th{text-align:left;padding:10px 14px;background:var(--bg3);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table td:first-child{color:var(--text);font-weight:500}
+.data-table tr:hover td{background:rgba(0,0,0,.015)}
+.hl-blue{color:var(--blue);font-weight:700;font-family:var(--mono)}
+
+/* Callouts */
+.callout{border-radius:10px;padding:14px 18px;margin:16px 0;font-size:13px;border-left:3px solid;line-height:1.7}
+.callout-blue{background:var(--blue-light);border-color:var(--blue);color:#1e40af}
+.callout strong{font-weight:700}
+
+/* CTA bar */
+.cta-bar{display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 32px;background:linear-gradient(90deg,#eff6ff,#dbeafe);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cta-text{font-size:13px;font-weight:500;color:var(--text)}
+.cta-btn{padding:7px 20px;background:var(--blue);color:white;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--sans);transition:all .15s}
+.cta-btn:hover{background:#1d4ed8}
+.cta-link{font-size:12px;color:var(--blue);text-decoration:underline}
+
+/* About */
+.about-section{max-width:800px;margin:0 auto;padding:32px;text-align:center}
+.about-section h3{font-size:16px;margin-bottom:8px}
+.about-section p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* Footer */
+.site-footer{border-top:1px solid var(--border);background:var(--bg2);padding:32px;margin-top:40px}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-inner h4{font-size:13px;font-weight:600;margin-bottom:8px}
+.footer-inner p,.footer-inner li{font-size:12px;color:var(--muted);line-height:1.7}
+.footer-inner ul{list-style:none;padding:0}
+.footer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+.footer-legal{font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:16px;text-align:center}
+
+/* Responsive */
+@media(max-width:768px){
+ .site-header{padding:0 16px;height:auto;padding-top:10px;padding-bottom:10px}
+ .tab-nav{padding:0 16px}
+ .main{padding:20px 16px}
+ .chart-grid{grid-template-columns:1fr}
+ .stats-row{grid-template-columns:repeat(2,1fr)}
+ .footer-grid{grid-template-columns:1fr}
+ .cross-nav{padding:8px 16px;gap:10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- Cross-nav -->
+<nav class="cross-nav">
+ <a href="../hub/">EpiDataKit Hub</a>
+ <span class="sep">|</span>
+ <a href="../tobaccoepi/">TobaccoEpi</a>
+ <span class="sep">|</span>
+ <span class="current">PharmaEpi</span>
+</nav>
+
+<!-- Disclaimer -->
+<div class="disclaimer"><strong data-i="disc_strong">Disclaimer</strong> <span data-i="disc_text">This dashboard is for informational purposes only. Data may not reflect real-time values. Not intended as medical or regulatory advice.</span></div>
+
+<!-- Header -->
+<header class="site-header">
+ <div class="hdr-left">
+  <div>
+   <div class="logo">Pharma<span>Epi</span></div>
+   <div class="subtitle" data-i="subtitle">Drug Safety Surveillance & Regulatory Intelligence</div>
+  </div>
+  <div class="subtitle" style="font-size:12px;color:var(--muted);" data-i="company">Shenzhen Evidence-Based Smart Health Technology Co., Ltd.</div>
+ </div>
+ <div class="hdr-right">
+  <button class="lang-btn" onclick="toggleLang()" id="langBtn">中文</button>
+ </div>
+</header>
+
+<div class="cta-bar">
+  <span class="cta-text" data-i="cta_text">Drug Safety Surveillance Platform — GLP-1 Adverse Event Intelligence Available</span>
+  <a href="mailto:nana@epidatakit.com" class="cta-btn" data-i="cta_btn">Request Demo</a>
+  <a href="https://www.linkedin.com/in/xiaona-nana-liu/" class="cta-link" data-i="cta_linkedin">About the Founder</a>
+</div>
+
+<!-- PHARMA TABS -->
+<div id="pharma-tabs" class="tab-nav">
+ <button class="tab-btn active" data-tab="b1" onclick="switchTab('b1')" data-i="tab_b1">Drug Safety Monitor</button>
+ <button class="tab-btn" data-tab="b2" onclick="switchTab('b2')" data-i="tab_b2">Competitive AE Benchmarking</button>
+ <button class="tab-btn" data-tab="b3" onclick="switchTab('b3')" data-i="tab_b3">Recall & Quality</button>
+ <button class="tab-btn" data-tab="b4" onclick="switchTab('b4')" data-i="tab_b4">Device Intelligence</button>
+</div>
+
+<div class="main">
+
+<!-- ===== B1: Drug Safety Monitor ===== -->
+<div class="panel active" id="panel-b1">
+<h2 data-i="b1_title">Drug Safety Monitor</h2>
+<div class="section-sub" data-i="b1_sub">FDA FAERS adverse event tracking for GLP-1 and metabolic drugs</div>
+<div class="callout callout-blue" data-ih="b1_usecase"><strong>Enterprise Question:</strong> What is my drug's adverse event profile post-market? Are AE reports increasing? How does my safety profile compare to competitor drugs in the same class?<br><strong>How to use:</strong> Monitor your drug's AE trend over time. A steep increase (like Ozempic 2023-2025: 9K&rarr;20K) may signal growing off-label use or emerging safety concerns. Compare your top AEs against competitors to identify differentiation opportunities or risks for label updates.</div>
+<div class="stats-row">
+ <div class="stat-card"><div class="stat-label">Ozempic</div><div class="stat-value blue">59,880</div><div class="stat-detail" data-i="b_ae_reports">AE Reports</div></div>
+ <div class="stat-card"><div class="stat-label">Mounjaro</div><div class="stat-value blue">79,973</div><div class="stat-detail" data-i="b_ae_reports">AE Reports</div></div>
+ <div class="stat-card"><div class="stat-label">Wegovy</div><div class="stat-value blue">17,958</div><div class="stat-detail" data-i="b_ae_reports">AE Reports</div></div>
+ <div class="stat-card"><div class="stat-label">Jardiance</div><div class="stat-value blue">61,560</div><div class="stat-detail" data-i="b_ae_reports">AE Reports</div></div>
+</div>
+<div class="chart-grid">
+ <div class="chart-card full"><h3 data-i="b1_c1t">Ozempic AE Reports by Year</h3><div class="chart-wrap tall"><canvas id="c-b1-trend"></canvas></div><span class="source-tag">FDA FAERS</span></div>
+ <div class="chart-card full"><h3 data-i="b1_c2t">Top AE Comparison Across Drugs</h3><div class="chart-wrap tall"><canvas id="c-b1-compare"></canvas></div><span class="source-tag">FDA FAERS</span></div>
+</div>
+<h3 data-i="b1_tbl_title">Top 8 Adverse Events by Drug</h3>
+<div class="chart-grid">
+ <div class="chart-card">
+  <h3>Ozempic</h3>
+  <table class="data-table"><thead><tr><th data-i="th_ae">Adverse Event</th><th data-i="th_count">Count</th></tr></thead><tbody>
+   <tr><td>Nausea</td><td class="hl-blue">5,182</td></tr><tr><td>Diarrhoea</td><td class="hl-blue">2,470</td></tr>
+   <tr><td>Vomiting</td><td class="hl-blue">2,294</td></tr><tr><td>Off Label Use</td><td class="hl-blue">3,528</td></tr>
+   <tr><td>Product Quality</td><td class="hl-blue">1,990</td></tr><tr><td>Fatigue</td><td class="hl-blue">1,585</td></tr>
+   <tr><td>Headache</td><td class="hl-blue">1,432</td></tr><tr><td>Constipation</td><td class="hl-blue">1,228</td></tr>
+  </tbody></table>
+ </div>
+ <div class="chart-card">
+  <h3>Mounjaro</h3>
+  <table class="data-table"><thead><tr><th data-i="th_ae">Adverse Event</th><th data-i="th_count">Count</th></tr></thead><tbody>
+   <tr><td>Nausea</td><td class="hl-blue">6,791</td></tr><tr><td>Diarrhoea</td><td class="hl-blue">3,530</td></tr>
+   <tr><td>Vomiting</td><td class="hl-blue">3,988</td></tr><tr><td>Off Label Use</td><td class="hl-blue">5,114</td></tr>
+   <tr><td>Constipation</td><td class="hl-blue">2,412</td></tr><tr><td>Fatigue</td><td class="hl-blue">2,010</td></tr>
+   <tr><td>Headache</td><td class="hl-blue">1,870</td></tr><tr><td>Abdominal Pain</td><td class="hl-blue">1,655</td></tr>
+  </tbody></table>
+ </div>
+ <div class="chart-card">
+  <h3>Wegovy</h3>
+  <table class="data-table"><thead><tr><th data-i="th_ae">Adverse Event</th><th data-i="th_count">Count</th></tr></thead><tbody>
+   <tr><td>Nausea</td><td class="hl-blue">2,150</td></tr><tr><td>Vomiting</td><td class="hl-blue">1,120</td></tr>
+   <tr><td>Diarrhoea</td><td class="hl-blue">985</td></tr><tr><td>Headache</td><td class="hl-blue">742</td></tr>
+   <tr><td>Constipation</td><td class="hl-blue">630</td></tr><tr><td>Fatigue</td><td class="hl-blue">580</td></tr>
+   <tr><td>Dizziness</td><td class="hl-blue">415</td></tr><tr><td>Abdominal Pain</td><td class="hl-blue">390</td></tr>
+  </tbody></table>
+ </div>
+ <div class="chart-card">
+  <h3>Jardiance</h3>
+  <table class="data-table"><thead><tr><th data-i="th_ae">Adverse Event</th><th data-i="th_count">Count</th></tr></thead><tbody>
+   <tr><td>Urinary Tract Inf.</td><td class="hl-blue">3,210</td></tr><tr><td>Drug Ineffective</td><td class="hl-blue">2,880</td></tr>
+   <tr><td>Diabetic Ketoacid.</td><td class="hl-blue">2,115</td></tr><tr><td>Nausea</td><td class="hl-blue">1,640</td></tr>
+   <tr><td>Diarrhoea</td><td class="hl-blue">1,420</td></tr><tr><td>Genital Inf. Fungal</td><td class="hl-blue">1,350</td></tr>
+   <tr><td>Renal Impairment</td><td class="hl-blue">1,180</td></tr><tr><td>Weight Decreased</td><td class="hl-blue">980</td></tr>
+  </tbody></table>
+ </div>
+</div>
+</div>
+
+<!-- ===== B2: Competitive AE Benchmarking ===== -->
+<div class="panel" id="panel-b2">
+<h2 data-i="b2_title">Competitive AE Benchmarking</h2>
+<div class="section-sub" data-i="b2_sub">Head-to-head GI side effect profile comparison</div>
+<div class="callout callout-blue" data-ih="b2_usecase"><strong>Enterprise Question:</strong> How does my drug's GI tolerability compare head-to-head with competitors? Which AEs should I highlight (or minimize) in marketing materials and KOL discussions?<br><strong>How to use:</strong> Use the radar chart for a visual competitive positioning. If your drug has lower nausea/vomiting rates, emphasize this in promotional materials. If higher, prepare medical affairs talking points explaining the clinical significance.</div>
+<div class="chart-grid">
+ <div class="chart-card full"><h3 data-i="b2_c1t">GI AE Profile Comparison (Radar)</h3><div class="chart-wrap tall"><canvas id="c-b2-radar"></canvas></div><span class="source-tag">FDA FAERS</span></div>
+</div>
+<h3 data-i="b2_tbl_title">Head-to-Head AE Rates</h3>
+<table class="data-table">
+ <thead><tr><th data-i="th_ae">Adverse Event</th><th>Ozempic</th><th>Mounjaro</th><th>Wegovy</th></tr></thead>
+ <tbody>
+  <tr><td>Nausea</td><td class="hl-blue">5,182</td><td class="hl-blue">6,791</td><td class="hl-blue">2,150</td></tr>
+  <tr><td>Vomiting</td><td class="hl-blue">2,294</td><td class="hl-blue">3,988</td><td class="hl-blue">1,120</td></tr>
+  <tr><td>Diarrhoea</td><td class="hl-blue">2,470</td><td class="hl-blue">3,530</td><td class="hl-blue">985</td></tr>
+  <tr><td>Constipation</td><td class="hl-blue">1,228</td><td class="hl-blue">2,412</td><td class="hl-blue">630</td></tr>
+  <tr><td>Abdominal Pain</td><td class="hl-blue">980</td><td class="hl-blue">1,655</td><td class="hl-blue">390</td></tr>
+ </tbody>
+</table>
+<span class="source-tag">FDA FAERS</span>
+</div>
+
+<!-- ===== B3: Recall & Quality ===== -->
+<div class="panel" id="panel-b3">
+<h2 data-i="b3_title">Recall & Quality</h2>
+<div class="section-sub" data-i="b3_sub">FDA drug recall enforcement actions and classification</div>
+<div class="callout callout-blue" data-ih="b3_usecase"><strong>Enterprise Question:</strong> Are there quality issues or recalls in my therapeutic area? Is my supply chain at risk? What is the FDA enforcement trend for my product category?<br><strong>How to use:</strong> Monitor Class I recalls (most severe) in your therapeutic area. A competitor recall creates both risk (regulatory scrutiny across the class) and opportunity (market share capture). Track yearly trends to anticipate FDA inspection priorities.</div>
+<div class="stats-row">
+ <div class="stat-card"><div class="stat-label" data-i="b3_s1l">2025 Recalls</div><div class="stat-value blue">765</div></div>
+ <div class="stat-card"><div class="stat-label" data-i="b3_s2l">Class I (Severe)</div><div class="stat-value red">1,723</div></div>
+ <div class="stat-card"><div class="stat-label" data-i="b3_s3l">Class II</div><div class="stat-value blue">14,128</div></div>
+</div>
+<div class="chart-grid">
+ <div class="chart-card"><h3 data-i="b3_c1t">Drug Recalls by Year</h3><div class="chart-wrap"><canvas id="c-b3-year"></canvas></div><span class="source-tag">FDA Recalls DB</span></div>
+ <div class="chart-card"><h3 data-i="b3_c2t">By Classification</h3><div class="chart-wrap"><canvas id="c-b3-class"></canvas></div><span class="source-tag">FDA Recalls DB</span></div>
+</div>
+</div>
+
+<!-- ===== B4: Device Intelligence ===== -->
+<div class="panel" id="panel-b4">
+<h2 data-i="b4_title">Device Intelligence</h2>
+<div class="section-sub" data-i="b4_sub">FDA 510(k) medical device clearance tracking</div>
+<div class="callout callout-blue" data-ih="b4_usecase"><strong>Enterprise Question:</strong> How many 510(k) clearances are issued in my device category annually? What is the competitive intensity? Which categories are growing fastest?<br><strong>How to use:</strong> Track your device category's 510(k) volume trend. Rising clearance numbers indicate increasing competition. Use category benchmarks to set realistic expectations for your regulatory timeline and market entry strategy.</div>
+<div class="stats-row">
+ <div class="stat-card"><div class="stat-label" data-i="b4_s1l">2025 510(k) Clearances</div><div class="stat-value blue">3,225</div></div>
+ <div class="stat-card"><div class="stat-label" data-i="b4_s2l">Top Category</div><div class="stat-value blue">18,960</div><div class="stat-detail" data-i="b4_cardio">Cardiovascular</div></div>
+</div>
+<div class="chart-grid">
+ <div class="chart-card"><h3 data-i="b4_c1t">510(k) Clearances by Year</h3><div class="chart-wrap"><canvas id="c-b4-year"></canvas></div><span class="source-tag">FDA 510(k) DB</span></div>
+ <div class="chart-card"><h3 data-i="b4_c2t">Top 5 Device Categories</h3><div class="chart-wrap"><canvas id="c-b4-cat"></canvas></div><span class="source-tag">FDA 510(k) DB</span></div>
+</div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Data Sources -->
+<div class="main" id="data-sources-section">
+<h2 data-i="ds_title">Data Sources</h2>
+<div class="section-sub" data-i="ds_sub">Primary regulatory and epidemiological data feeds</div>
+<table class="data-table">
+ <thead><tr><th data-i="th_source">Source</th><th data-i="th_provider">Provider</th><th data-i="th_coverage">Coverage</th><th data-i="th_license">License</th></tr></thead>
+ <tbody>
+  <tr><td>FDA FAERS</td><td>FDA CDER</td><td data-i="ds_faers_cov">Drug AE Reports, 2004-present</td><td data-i="ds_public">Public</td></tr>
+  <tr><td>FDA Recalls</td><td>FDA</td><td data-i="ds_recalls_cov">Drug Recalls, 2012-present</td><td data-i="ds_public">Public</td></tr>
+  <tr><td>FDA 510(k)</td><td>FDA CDRH</td><td data-i="ds_510k_cov">510(k) Clearances, 1976-present</td><td data-i="ds_public">Public</td></tr>
+ </tbody>
+</table>
+</div>
+
+<div class="about-section">
+  <h3 data-i="about_title">Built by Epidemiologists</h3>
+  <p data-i="about_text">PharmaEpi is developed by Dr. Nana Liu (PhD, Erasmus MC), a Chief Scientist with expertise in epidemiology, biostatistics, and regulatory science. All analyses use survey-weighted methodologies validated against official sources. Contact: nana@epidatakit.com</p>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+<div class="footer-inner">
+ <div class="footer-grid">
+  <div><h4 data-i="ft_about_title">About</h4><p data-i="ft_about_text">PharmaEpi is a regulatory intelligence platform built by Shenzhen Evidence-Based Smart Health Technology Co., Ltd. for pharmaceutical epidemiology and drug safety monitoring.</p></div>
+  <div><h4 data-i="ft_sources_title">Data Sources</h4><ul>
+   <li>FDA FAERS</li><li>FDA Recalls</li><li>FDA 510(k)</li>
+  </ul></div>
+  <div><h4 data-i="ft_contact_title">Contact</h4><p data-i="ft_contact_text">Shenzhen Evidence-Based Smart Health Technology Co., Ltd.</p></div>
+ </div>
+ <div class="footer-legal" data-i="ft_legal">This platform is provided for informational and research purposes only. All data sourced from publicly available government databases. Not intended as medical, legal, or regulatory advice. Use at your own risk.</div>
+</div>
+</footer>
+
+<script>
+/* ========== i18n ========== */
+var curLang='en';
+var I={
+ disc_strong:{en:'Disclaimer',zh:'免责声明'},
+ disc_text:{en:'This dashboard is for informational purposes only. Data may not reflect real-time values. Not intended as medical or regulatory advice.',zh:'本仪表板仅供参考。数据可能非实时。不构成医学或监管建议。'},
+ subtitle:{en:'Drug Safety Surveillance & Regulatory Intelligence',zh:'药物安全监测与监管情报'},
+ company:{en:'Shenzhen Evidence-Based Smart Health Technology Co., Ltd.',zh:'深圳循证智康科技有限公司'},
+ tab_b1:{en:'Drug Safety Monitor',zh:'药物安全监测'},
+ tab_b2:{en:'Competitive AE Benchmarking',zh:'竞品安全对标'},
+ tab_b3:{en:'Recall & Quality',zh:'召回与质量'},
+ tab_b4:{en:'Device Intelligence',zh:'器械情报'},
+ /* B1 use case */
+ b1_usecase:{en:'<strong>Enterprise Question:</strong> What is my drug\'s adverse event profile post-market? Are AE reports increasing? How does my safety profile compare to competitor drugs in the same class?<br><strong>How to use:</strong> Monitor your drug\'s AE trend over time. A steep increase (like Ozempic 2023-2025: 9K\u219220K) may signal growing off-label use or emerging safety concerns. Compare your top AEs against competitors to identify differentiation opportunities or risks for label updates.',zh:'<strong>企业问题：</strong>我的药物上市后不良事件谱如何？AE报告是否在增加？我的安全性特征与同类竞品相比如何？<br><strong>使用方法：</strong>监控药物AE随时间的趋势。急剧增加（如Ozempic 2023-2025: 9K\u219220K）可能预示超适应症使用增长或新安全隐患。将您的头号AE与竞品对比，以识别差异化机会或标签更新风险。'},
+ b2_usecase:{en:'<strong>Enterprise Question:</strong> How does my drug\'s GI tolerability compare head-to-head with competitors? Which AEs should I highlight (or minimize) in marketing materials and KOL discussions?<br><strong>How to use:</strong> Use the radar chart for a visual competitive positioning. If your drug has lower nausea/vomiting rates, emphasize this in promotional materials. If higher, prepare medical affairs talking points explaining the clinical significance.',zh:'<strong>企业问题：</strong>我的药物GI耐受性与竞品头对头比较如何？在营销材料和KOL讨论中应强调（或淡化）哪些AE？<br><strong>使用方法：</strong>使用雷达图进行可视化竞争定位。如果您的药物恶心/呕吐率较低，在推广材料中强调。如果较高，准备医学事务部门的沟通要点，解释临床意义。'},
+ b3_usecase:{en:'<strong>Enterprise Question:</strong> Are there quality issues or recalls in my therapeutic area? Is my supply chain at risk? What is the FDA enforcement trend for my product category?<br><strong>How to use:</strong> Monitor Class I recalls (most severe) in your therapeutic area. A competitor recall creates both risk (regulatory scrutiny across the class) and opportunity (market share capture). Track yearly trends to anticipate FDA inspection priorities.',zh:'<strong>企业问题：</strong>我的治疗领域是否存在质量问题或召回？我的供应链是否有风险？我的产品品类FDA执法趋势如何？<br><strong>使用方法：</strong>监控您的治疗领域中的Class I召回（最严重）。竞品召回既带来风险（整个品类的监管审查加强）也带来机会（市场份额获取）。追踪年度趋势以预判FDA检查重点。'},
+ b4_usecase:{en:'<strong>Enterprise Question:</strong> How many 510(k) clearances are issued in my device category annually? What is the competitive intensity? Which categories are growing fastest?<br><strong>How to use:</strong> Track your device category\'s 510(k) volume trend. Rising clearance numbers indicate increasing competition. Use category benchmarks to set realistic expectations for your regulatory timeline and market entry strategy.',zh:'<strong>企业问题：</strong>我的器械品类每年发放多少510(k)许可？竞争强度如何？哪些品类增长最快？<br><strong>使用方法：</strong>追踪您的器械品类510(k)数量趋势。许可数量增加表明竞争加剧。使用品类基准为您的监管时间线和市场进入策略设定合理预期。'},
+ /* B1 */
+ b1_title:{en:'Drug Safety Monitor',zh:'药物安全监测'},
+ b1_sub:{en:'FDA FAERS adverse event tracking for GLP-1 and metabolic drugs',zh:'FDA FAERS GLP-1及代谢药物不良事件追踪'},
+ b_ae_reports:{en:'AE Reports',zh:'不良事件报告'},
+ b1_c1t:{en:'Ozempic AE Reports by Year',zh:'Ozempic 按年度不良事件'},
+ b1_c2t:{en:'Top AE Comparison Across Drugs',zh:'药物主要不良事件对比'},
+ b1_tbl_title:{en:'Top 8 Adverse Events by Drug',zh:'各药物前8不良事件'},
+ th_ae:{en:'Adverse Event',zh:'不良事件'},th_count:{en:'Count',zh:'数量'},
+ /* B2 */
+ b2_title:{en:'Competitive AE Benchmarking',zh:'竞品安全对标'},
+ b2_sub:{en:'Head-to-head GI side effect profile comparison',zh:'GI副作用特征正面对比'},
+ b2_c1t:{en:'GI AE Profile Comparison (Radar)',zh:'GI不良事件特征对比（雷达图）'},
+ b2_tbl_title:{en:'Head-to-Head AE Rates',zh:'正面AE对比'},
+ /* B3 */
+ b3_title:{en:'Recall & Quality',zh:'召回与质量'},
+ b3_sub:{en:'FDA drug recall enforcement actions and classification',zh:'FDA药品召回执法行动及分类'},
+ b3_s1l:{en:'2025 Recalls',zh:'2025年召回'},b3_s2l:{en:'Class I (Severe)',zh:'I类（严重）'},b3_s3l:{en:'Class II',zh:'II类'},
+ b3_c1t:{en:'Drug Recalls by Year',zh:'按年度药品召回'},
+ b3_c2t:{en:'By Classification',zh:'按分类'},
+ /* B4 */
+ b4_title:{en:'Device Intelligence',zh:'器械情报'},
+ b4_sub:{en:'FDA 510(k) medical device clearance tracking',zh:'FDA 510(k) 医疗器械审批追踪'},
+ b4_s1l:{en:'2025 510(k) Clearances',zh:'2025年510(k)审批'},
+ b4_s2l:{en:'Top Category',zh:'首要类别'},
+ b4_cardio:{en:'Cardiovascular',zh:'心血管'},
+ b4_c1t:{en:'510(k) Clearances by Year',zh:'按年度510(k)审批'},
+ b4_c2t:{en:'Top 5 Device Categories',zh:'前5器械类别'},
+ /* Data Sources */
+ ds_title:{en:'Data Sources',zh:'数据来源'},
+ ds_sub:{en:'Primary regulatory and epidemiological data feeds',zh:'主要监管和流行病学数据源'},
+ th_source:{en:'Source',zh:'数据源'},th_provider:{en:'Provider',zh:'提供方'},th_coverage:{en:'Coverage',zh:'覆盖范围'},th_license:{en:'License',zh:'授权'},
+ ds_faers_cov:{en:'Drug AE Reports, 2004-present',zh:'药物不良事件，2004至今'},
+ ds_recalls_cov:{en:'Drug Recalls, 2012-present',zh:'药品召回，2012至今'},
+ ds_510k_cov:{en:'510(k) Clearances, 1976-present',zh:'510(k)审批，1976至今'},
+ ds_public:{en:'Public',zh:'公开'},
+ /* Footer */
+ ft_about_title:{en:'About',zh:'关于'},
+ ft_about_text:{en:'PharmaEpi is a regulatory intelligence platform built by Shenzhen Evidence-Based Smart Health Technology Co., Ltd. for pharmaceutical epidemiology and drug safety monitoring.',zh:'PharmaEpi 是由深圳循证智康科技有限公司构建的监管情报平台，用于医药流行病学和药物安全监测。'},
+ ft_sources_title:{en:'Data Sources',zh:'数据来源'},
+ ft_contact_title:{en:'Contact',zh:'联系方式'},
+ ft_contact_text:{en:'Shenzhen Evidence-Based Smart Health Technology Co., Ltd.',zh:'深圳循证智康科技有限公司'},
+ ft_legal:{en:'This platform is provided for informational and research purposes only. All data sourced from publicly available government databases. Not intended as medical, legal, or regulatory advice. Use at your own risk.',zh:'本平台仅供信息和研究用途。所有数据来源于公开政府数据库。不构成医学、法律或监管建议。使用者自行承担风险。'},
+ cta_text:{en:'Drug Safety Surveillance Platform \u2014 GLP-1 Adverse Event Intelligence Available',zh:'药物安全监测平台 \u2014 GLP-1不良事件情报已发布'},
+ cta_btn:{en:'Request Demo',zh:'申请演示'},
+ cta_linkedin:{en:'About the Founder',zh:'关于创始人'},
+ about_title:{en:'Built by Epidemiologists',zh:'由流行病学家构建'},
+ about_text:{en:'PharmaEpi is developed by Dr. Nana Liu (PhD, Erasmus MC), a Chief Scientist with expertise in epidemiology, biostatistics, and regulatory science. All analyses use survey-weighted methodologies validated against official sources. Contact: nana@epidatakit.com',zh:'PharmaEpi由刘晓娜博士（鹿特丹Erasmus MC流行病学博士）开发，她是一位在流行病学、生物统计学和监管科学领域具有专业背景的首席科学家。所有分析使用经官方数据源交叉验证的调查加权方法。联系：nana@epidatakit.com'}
+};
+
+function toggleLang(){
+ curLang=curLang==='en'?'zh':'en';
+ document.documentElement.lang=curLang==='en'?'en':'zh-CN';
+ document.getElementById('langBtn').textContent=curLang==='en'?'中文':'EN';
+ applyLang();
+ rebuildCharts();
+}
+function applyLang(){
+ document.querySelectorAll('[data-i]').forEach(function(el){
+  var k=el.getAttribute('data-i');
+  if(I[k])el.textContent=I[k][curLang]||I[k].en;
+ });
+ document.querySelectorAll('[data-ih]').forEach(function(el){
+  var k=el.getAttribute('data-ih');
+  if(I[k])el.innerHTML=I[k][curLang]||I[k].en;
+ });
+}
+
+/* ========== Navigation ========== */
+var currentTab='b1';
+
+function switchTab(t){
+ currentTab=t;
+ document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+ document.querySelector('[data-tab="'+t+'"]').classList.add('active');
+ document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+ var el=document.getElementById('panel-'+t);
+ if(el)el.classList.add('active');
+}
+
+/* ========== Charts ========== */
+var charts={};
+function destroyAll(){Object.keys(charts).forEach(function(k){if(charts[k]){charts[k].destroy();delete charts[k];}});}
+
+function initCharts(){
+ if(typeof Chart==='undefined'){setTimeout(initCharts,200);return;}
+ Chart.defaults.font.family="'Inter',-apple-system,sans-serif";
+ Chart.defaults.font.size=12;
+ Chart.defaults.color='#6b7294';
+ Chart.defaults.plugins.legend.labels.usePointStyle=true;
+ Chart.defaults.plugins.legend.labels.boxWidth=8;
+ buildAllCharts();
+ applyLang();
+}
+
+function buildAllCharts(){
+ destroyAll();
+ var amber='#d97706',blue='#2563eb',blueL='rgba(37,99,235,.15)',red='#dc2626',teal='#0d9488';
+ var mono="'DM Mono',monospace";
+
+ /* B1: Ozempic AE trend */
+ charts.b1trend=new Chart(document.getElementById('c-b1-trend'),{type:'line',data:{
+  labels:['2018','2019','2020','2021','2022','2023','2024','2025'],
+  datasets:[{label:'Ozempic',data:[1159,1749,3203,4056,5780,9355,14299,20234],borderColor:blue,backgroundColor:blueL,tension:.3,fill:true,pointRadius:4}]
+ },options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},interaction:{mode:'index',intersect:false}}});
+
+ /* B1: Top AE comparison */
+ var aeLabels=curLang==='zh'?['恶心','呕吐','腹泻','超适应症']:['Nausea','Vomiting','Diarrhoea','Off Label Use'];
+ charts.b1compare=new Chart(document.getElementById('c-b1-compare'),{type:'bar',data:{
+  labels:aeLabels,
+  datasets:[
+   {label:'Ozempic',data:[5182,2294,2470,3528],backgroundColor:'rgba(37,99,235,.7)',borderRadius:4},
+   {label:'Mounjaro',data:[6791,3988,3530,5114],backgroundColor:'rgba(217,119,6,.7)',borderRadius:4},
+   {label:'Wegovy',data:[2150,1120,985,680],backgroundColor:'rgba(13,148,136,.7)',borderRadius:4},
+   {label:'Jardiance',data:[1640,0,1420,0],backgroundColor:'rgba(148,163,184,.7)',borderRadius:4}
+  ]
+ },options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+ /* B2: Radar */
+ charts.b2radar=new Chart(document.getElementById('c-b2-radar'),{type:'radar',data:{
+  labels:curLang==='zh'?['恶心','呕吐','腹泻','便秘','腹痛']:['Nausea','Vomiting','Diarrhoea','Constipation','Abdom. Pain'],
+  datasets:[
+   {label:'Ozempic',data:[5182,2294,2470,1228,980],borderColor:blue,backgroundColor:'rgba(37,99,235,.1)',pointRadius:3},
+   {label:'Mounjaro',data:[6791,3988,3530,2412,1655],borderColor:amber,backgroundColor:'rgba(217,119,6,.1)',pointRadius:3},
+   {label:'Wegovy',data:[2150,1120,985,630,390],borderColor:teal,backgroundColor:'rgba(13,148,136,.1)',pointRadius:3}
+  ]
+ },options:{responsive:true,maintainAspectRatio:false,scales:{r:{beginAtZero:true,ticks:{font:{family:mono}}}}}});
+
+ /* B3: Recalls by year */
+ charts.b3year=new Chart(document.getElementById('c-b3-year'),{type:'bar',data:{
+  labels:['2019','2020','2021','2022','2023','2024','2025'],
+  datasets:[{data:[2152,1035,1016,1351,1252,657,765],backgroundColor:blue,borderRadius:4}]
+ },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+ /* B3: Classification doughnut */
+ charts.b3class=new Chart(document.getElementById('c-b3-class'),{type:'doughnut',data:{
+  labels:['Class I','Class II','Class III'],
+  datasets:[{data:[1723,14128,1678],backgroundColor:[red,blue,'#94a3b8'],borderWidth:0}]
+ },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
+
+ /* B4: 510k by year */
+ charts.b4year=new Chart(document.getElementById('c-b4-year'),{type:'bar',data:{
+  labels:['2019','2020','2021','2022','2023','2024','2025'],
+  datasets:[{data:[2918,2925,3023,3212,3347,3129,3225],backgroundColor:blue,borderRadius:4}]
+ },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+ /* B4: Top categories */
+ var catLabels=curLang==='zh'?['心血管','骨科','通用/整形','综合医院','放射科']:['Cardiovascular','Orthopedic','General/Plastic','General Hospital','Radiology'];
+ charts.b4cat=new Chart(document.getElementById('c-b4-cat'),{type:'bar',data:{
+  labels:catLabels,
+  datasets:[{data:[18960,16849,16119,15646,14426],backgroundColor:blue,borderRadius:4}]
+ },options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+}
+
+function rebuildCharts(){
+ buildAllCharts();
+}
+
+/* ========== Init ========== */
+setTimeout(initCharts,100);
+</script>
+</body>
+</html>
